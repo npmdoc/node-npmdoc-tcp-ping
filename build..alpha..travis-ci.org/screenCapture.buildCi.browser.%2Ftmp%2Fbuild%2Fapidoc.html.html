@@ -1,0 +1,211 @@
+<html><head></head><body><div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a href="https://github.com/wesolyromek/tcp-ping">tcp-ping (v0.1.1)</a>
+</h1>
+<h4>A ping utility using TCP connection</h4>
+<div class="apidocSectionDiv"><a href="#apidoc.tableOfContents" id="apidoc.tableOfContents"><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.tcp-ping">module tcp-ping</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.tcp-ping.ping">
+            function <span class="apidocSignatureSpan">tcp-ping.</span>ping
+            <span class="apidocSignatureSpan">(options, callback)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.tcp-ping.probe">
+            function <span class="apidocSignatureSpan">tcp-ping.</span>probe
+            <span class="apidocSignatureSpan">(address, port, callback)</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.tcp-ping" id="apidoc.module.tcp-ping">module tcp-ping</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.tcp-ping.ping" id="apidoc.element.tcp-ping.ping">
+        function <span class="apidocSignatureSpan">tcp-ping.</span>ping
+        <span class="apidocSignatureSpan">(options, callback)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">ping = function (options, callback) {
+    var i = 0;
+    var results = [];
+    options.address = options.address || 'localhost';
+    options.port = options.port || 80;
+    options.attempts = options.attempts || 10;
+    options.timeout = options.timeout || 5000;
+    var check = function(options, callback) {
+        if(i &lt; options.attempts) {
+            connect(options, callback);
+        } else {
+            var avg = results.reduce(function(prev, curr) {
+                return prev + curr.time;
+            }, 0);
+            var max = results.reduce(function(prev, curr) {
+                return (prev &gt; curr.time) ? prev : curr.time;
+            }, results[0].time);
+            var min = results.reduce(function(prev, curr) {
+                return (prev &lt; curr.time) ? prev : curr.time;
+            }, results[0].time);
+            avg = avg / results.length;
+            var out = {
+                address: options.address,
+                port: options.port,
+                attempts: options.attempts,
+                avg: avg,
+                max: max,
+                min: min,
+                results: results
+            };
+            callback(undefined, out);
+        }
+    };
+
+    var connect = function(options, callback) {
+        var s = new net.Socket();
+        var start = process.hrtime();
+        s.connect(options.port, options.address, function() {
+            var time_arr = process.hrtime(start);
+            var time = (time_arr[0] * 1e9 + time_arr[1]) / 1e6;
+            results.push({ seq: i, time: time });
+            s.destroy();
+            i++;
+            check(options, callback);
+        });
+        s.on('error', function(e) {
+            results.push({seq: i, time: undefined, err: e });
+            s.destroy();
+            i++;
+            check(options, callback);
+        });
+        s.setTimeout(options.timeout, function() {
+            results.push({seq: i, time: undefined, err: Error('Request timeout') });
+            s.destroy();
+            i++;
+            check(options, callback);
+        });
+    };
+    connect(options, callback);
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+```javascript
+var tcpp = require('tcp-ping');
+
+tcpp.probe('46.28.246.123', 80, function(err, available) {
+    console.log(available);
+});
+
+tcpp.<span class="apidocCodeKeywordSpan">ping</span>({ address: '46.28.246.123' }, function(err, data) {
+    console.log(data);
+});
+```
+...</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.tcp-ping.probe" id="apidoc.element.tcp-ping.probe">
+        function <span class="apidocSignatureSpan">tcp-ping.</span>probe
+        <span class="apidocSignatureSpan">(address, port, callback)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">probe = function (address, port, callback) {
+    address = address || 'localhost';
+    port = port || 80;
+    ping({ address: address, port: port, attempts: 1, timeout: 5000 }, function(err, data) {
+        var available = data.min !== undefined;
+        callback(err, available);
+    });
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+```callback``` is a node style callback ```function(err, data)```, where data is true if the server is available and false otherwise
+.
+
+###Usage
+
+```javascript
+var tcpp = require('tcp-ping');
+
+tcpp.<span class="apidocCodeKeywordSpan">probe</span>('46.28.246.123', 80, function(err, available) {
+    console.log(available);
+});
+
+tcpp.ping({ address: '46.28.246.123' }, function(err, data) {
+    console.log(data);
+});
+```
+...</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
+</body></html>

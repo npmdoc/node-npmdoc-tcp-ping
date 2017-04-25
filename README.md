@@ -1,6 +1,6 @@
 # npmdoc-tcp-ping
 
-#### api documentation for  [tcp-ping (v0.1.1)](https://github.com/wesolyromek/tcp-ping)  [![npm package](https://img.shields.io/npm/v/npmdoc-tcp-ping.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-tcp-ping) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-tcp-ping.svg)](https://travis-ci.org/npmdoc/node-npmdoc-tcp-ping)
+#### basic api documentation for  [tcp-ping (v0.1.1)](https://github.com/wesolyromek/tcp-ping)  [![npm package](https://img.shields.io/npm/v/npmdoc-tcp-ping.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-tcp-ping) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-tcp-ping.svg)](https://travis-ci.org/npmdoc/node-npmdoc-tcp-ping)
 
 #### A ping utility using TCP connection
 
